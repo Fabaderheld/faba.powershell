@@ -1,0 +1,50 @@
+---
+# tasks file for faba.powershell
+  - name: "Install Prerequisits for Powershell"
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - ca-certificates
+      - icu-devtools
+      - libunwind8
+      - tzdata
+    tags:
+      - powershell
+
+  - name: "Download Powershell"
+    get_url:
+      url: "https://github.com/PowerShell/PowerShell/releases/download/v{{ ps_version }}/powershell-{{ ps_version }}-linux-arm32.tar.gz"
+      dest: "/tmp/powershell-{{ ps_version }}-linux-arm32.tar.gz"
+      mode: '0440'
+    tags:
+      - powershell
+
+  - name: "Create Powershell Core Folder"
+    file:
+      path: "/opt/microsoft/powershell/{{ ps_version }}/"
+      state: directory
+      recurse: yes
+      owner: root
+      group: root
+    tags:
+      - powershell
+
+  - name: "Extract Poweshell Core"
+    unarchive:
+      src: "/tmp/powershell-{{ ps_version }}-linux-arm32.tar.gz"
+      dest: "/opt/microsoft/powershell/{{ ps_version }}/"
+      remote_src: yes
+    tags:
+      - powershell
+
+  - name: "Create symlink to /usr/bin"
+    file:
+      src: /opt/microsoft/powershell/{{ ps_version }}/pwsh
+      dest: /usr/bin/pwsh
+      owner: root
+      group: root
+      state: link
+      mode: 0755
+    tags:
+      - powershell
